@@ -1,0 +1,73 @@
+{
+  "extends": [
+    "standard",
+    "prettier",
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:import/errors",
+    "plugin:import/recommended",
+    "plugin:import/typescript",
+    "plugin:import/warnings",
+    "plugin:node/recommended",
+    "plugin:promise/recommended",
+    "plugin:prettier/recommended"
+  ],
+  "globals": {
+    "Atomics": "readonly",
+    "SharedArrayBuffer": "readonly"
+  },
+  "ignorePatterns": [],
+  "overrides": [],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 2022,
+    "sourceType": "module"
+  },
+  "plugins": [
+    "@typescript-eslint/eslint-plugin"
+  ],
+  "root": true,
+  "rules": {
+    "comma-dangle": "error",
+    "consistent-return": "warn",
+    "consistent-this": "warn",
+    "import/default": 2,
+    "import/export": 2,
+    "import/named": 2,
+    "import/namespace": 2,
+    "import/no-unresolved": "error",
+    "indent": [
+      "error",
+      2
+    ],
+    "no-console": 0,
+    "no-extra-semi": 1,
+    "no-use-before-define": 1,
+    "no-useless-constructor": 0,
+    "node/no-unsupported-features/es-syntax": 0,
+    "node/no-unpublished-import": 0,
+    "node/no-missing-import": 0,
+    "quotes": [
+      "error",
+      "single"
+    ],
+    "semi": [
+      "error",
+      "never"
+    ],
+    "sort-imports": 0
+  },
+  "settings": {
+    "import/resolver": {
+      "alias": {
+        "extensions": [
+          ".js",
+          ".ts"
+        ],
+        "map": [
+          ["@", "./src/"]
+        ]
+      }
+    }
+  }
+}

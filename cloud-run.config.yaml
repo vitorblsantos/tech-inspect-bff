@@ -1,0 +1,36 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: tech-inspect-bff
+  labels:
+    cloud.googleapis.com/location: us-east1
+  annotations:
+    run.googleapis.com/ingress: internal-and-cloud-load-balancing
+    run.googleapis.com/ingress-status: all
+spec:
+  template:
+    metadata:
+      labels:
+        run.googleapis.com/startupProbeType: Custom
+      annotations:
+        autoscaling.knative.dev/maxScale: "1"
+    spec:
+      containerConcurrency: 1000
+      timeoutSeconds: 300
+      containers:
+        - image: us-east1-docker.pkg.dev/vitorblsantos/tech-inspect-bff:latest
+          ports:
+            - name: http1
+              containerPort: 8080
+          env:
+              valueFrom:
+                secretKeyRef:
+                  key: latest
+                  name: IMOBILIARIAS_DEMETER_SENTRY_DSN
+          resources:
+            limits:
+              cpu: "0.5"
+              memory: 512Mi
+  traffic:
+    - percent: 100
+      latestRevision: true

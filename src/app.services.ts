@@ -1,4 +1,6 @@
+import { v4 as uuidv4 } from 'uuid'
 import { Injectable } from '@nestjs/common'
+import Firebase from 'firebase-admin'
 
 import { EInspectionStatus, IDashboard, IInspection } from '@/app.interfaces'
 
@@ -64,8 +66,19 @@ export class Services {
     })
   }
 
+  public async post(payload: Partial<IInspection>): Promise<string> {
+    const id = uuidv4()
 
-  public post(): string {
-    return 'inspeções'
+    await Firebase.firestore().collection('inspecoes').doc(id).set({
+      id,
+      created_at: new Date(),
+      updated_at: new Date(),
+      status: EInspectionStatus['PENDING'],
+      ...payload
+    }, {
+      merge: true
+    })
+
+    return '@inspecoes/registro-salvo'
   }
 }

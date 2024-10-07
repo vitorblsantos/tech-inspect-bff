@@ -12,7 +12,7 @@ async function bootstrap() {
 
   await app.listen(port)
 
-  console.log(`Aplicação disponível na porta: ${port} 🔥`)
+  console.log(`Aplicação disponível na porta: ${port}`)
 }
 
 bootstrap()

@@ -1,4 +1,5 @@
-import { Controller, Get, Post } from '@nestjs/common'
+import { CacheInterceptor } from '@nestjs/cache-manager'
+import { Body, Controller, Get, HttpCode, Post, UseInterceptors } from '@nestjs/common'
 
 import { IDashboard, IInspection } from '@/app.interfaces'
 import { Services } from '@/app.services'
@@ -17,8 +18,10 @@ export class Controllers {
     return await this.service.getInspection()
   }
 
+  @HttpCode(200)
+  @UseInterceptors(CacheInterceptor)
   @Post('/inspecoes')
-  post(): string {
-    return this.service.post()
+  post(@Body() payload: IInspection): Promise<string> {
+    return this.service.post(payload)
   }
 }

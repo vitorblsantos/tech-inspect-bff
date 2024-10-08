@@ -1,5 +1,13 @@
 import { CacheInterceptor } from '@nestjs/cache-manager'
-import { Body, Controller, Get, HttpCode, Post, UseInterceptors } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Post,
+  UploadedFile,
+  UseInterceptors
+} from '@nestjs/common'
 
 import { IDashboard, IInspection } from '@/app.interfaces'
 import { Services } from '@/app.services'
@@ -23,5 +31,13 @@ export class Controllers {
   @Post('/inspecoes')
   post(@Body() payload: IInspection): Promise<string> {
     return this.service.post(payload)
+  }
+
+  @Post('/detect')
+  detectCrack(
+    @UploadedFile()
+    file: any
+  ): Promise<string> {
+    return this.service.detectCrack(file)
   }
 }

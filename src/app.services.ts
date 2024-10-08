@@ -1,11 +1,17 @@
 import { v4 as uuidv4 } from 'uuid'
-import { Injectable } from '@nestjs/common'
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import Firebase from 'firebase-admin'
 
 import { EInspectionStatus, IDashboard, IInspection } from '@/app.interfaces'
+import { firstValueFrom } from 'rxjs'
+import { HttpService } from '@nestjs/axios'
+import * as FormData from 'form-data'
 
 @Injectable()
 export class Services {
+  constructor(private readonly httpService: HttpService){
+
+  }
   public get(): Promise<IDashboard> {
     return Promise.resolve({
       total: 120,
@@ -80,5 +86,30 @@ export class Services {
     })
 
     return '@inspecoes/registro-salvo'
+  }
+
+  public async detectCrack(file: Express.Multer.File): Promise<string> {
+    const formData = new FormData();
+
+    const fileStream = file.buffer;
+    formData.append('file', fileStream, file.originalname);
+
+    try {
+      const url = process.env.URL_CRACK_DETECTION_API;
+      const response = await firstValueFrom(
+        this.httpService.post(url as string, formData, {
+          headers: {
+            ...formData.getHeaders(),
+          },
+        }),
+      );
+      console.log(response.data);
+      return JSON.stringify(response.data);
+    } catch (error) {
+      throw new HttpException(
+        'Erro ao acessar a API externa: ' + error.message,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

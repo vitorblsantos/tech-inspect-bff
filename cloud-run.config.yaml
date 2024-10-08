@@ -23,10 +23,6 @@ spec:
             - name: http1
               containerPort: 8080
           env:
-              valueFrom:
-                secretKeyRef:
-                  key: latest
-                  name: IMOBILIARIAS_DEMETER_SENTRY_DSN
           resources:
             limits:
               cpu: "0.5"

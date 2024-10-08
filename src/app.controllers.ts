@@ -1,4 +1,4 @@
-import { Controller, Get, Post } from '@nestjs/common'
+import { Controller, Get, Post, UploadedFile } from '@nestjs/common'
 
 import { IDashboard, IInspection } from '@/app.interfaces'
 import { Services } from '@/app.services'
@@ -20,5 +20,13 @@ export class Controllers {
   @Post('/inspecoes')
   post(): string {
     return this.service.post()
+  }
+
+  @Post('/detect')
+  detectCrack(
+    @UploadedFile()
+      file: Express.Multer.File
+  ): string {
+    return this.service.detectCrack(file)
   }
 }

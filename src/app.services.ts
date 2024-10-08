@@ -9,9 +9,8 @@ import * as FormData from 'form-data'
 
 @Injectable()
 export class Services {
-  constructor(private readonly httpService: HttpService){
+  constructor(private readonly httpService: HttpService) {}
 
-  }
   public get(): Promise<IDashboard> {
     return Promise.resolve({
       total: 120,
@@ -45,7 +44,7 @@ export class Services {
         'https://s2-casaejardim.glbimg.com/nHlVi8l9Hvjpydwfm2vSykkiVU4=/0x0:1400x933/924x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_a0b7e59562ef42049f4e191fe476fe7d/internal_photos/bs/2023/p/n/a6KJuERmmFBzM2ibHhhw/platina-220-qual-e-o-predio-mais-alto-de-sao-paulo-casa-e-jardim4.jpg',
         'https://s2-casaejardim.glbimg.com/nHlVi8l9Hvjpydwfm2vSykkiVU4=/0x0:1400x933/924x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_a0b7e59562ef42049f4e191fe476fe7d/internal_photos/bs/2023/p/n/a6KJuERmmFBzM2ibHhhw/platina-220-qual-e-o-predio-mais-alto-de-sao-paulo-casa-e-jardim4.jpg'
       ],
-      status: EInspectionStatus['DONE'],
+      status: EInspectionStatus.DONE,
       updated_at: new Date()
     })
   }
@@ -75,15 +74,21 @@ export class Services {
   public async post(payload: Partial<IInspection>): Promise<string> {
     const id = uuidv4()
 
-    await Firebase.firestore().collection('inspecoes').doc(id).set({
-      id,
-      created_at: new Date(),
-      updated_at: new Date(),
-      status: EInspectionStatus['PENDING'],
-      ...payload
-    }, {
-      merge: true
-    })
+    await Firebase.firestore()
+      .collection('inspecoes')
+      .doc(id)
+      .set(
+        {
+          id,
+          created_at: new Date(),
+          updated_at: new Date(),
+          status: EInspectionStatus.PENDING,
+          ...payload
+        },
+        {
+          merge: true
+        }
+      )
 
     return '@inspecoes/registro-salvo'
   }

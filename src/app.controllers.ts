@@ -11,6 +11,7 @@ import {
 
 import { IDashboard, IInspection } from '@/app.interfaces'
 import { Services } from '@/app.services'
+import { FileInterceptor } from '@nestjs/platform-express'
 
 @Controller()
 export class Controllers {
@@ -39,6 +40,7 @@ export class Controllers {
   }
 
   @Post('/detect')
+  @UseInterceptors(FileInterceptor('file'))
   detectCrack(
     @UploadedFile()
       file: any

@@ -50,17 +50,12 @@ export class Services {
   }
 
   public async list(): Promise<IInspection[]> {
-    return Promise.resolve([
-      {
-        created_at: new Date(),
-        description: 'teste',
-        edificio: 'teste',
-        images: ['teste'],
-        inspetor: 'teste',
-        status: EInspectionStatus.DONE,
-        updated_at: new Date()
-      }
-    ])
+    const { docs } = await Firebase.firestore()
+      .collection('inspecoes')
+      .limit(999)
+      .get()
+
+    return docs.map((el) => el.data()) as IInspection[]
   }
 
   public async post(payload: Partial<IInspection>): Promise<string> {

@@ -49,26 +49,18 @@ export class Services {
     })
   }
 
-  public list(): Promise<IDashboard> {
-    return Promise.resolve({
-      total: 120,
-      pendencias: 0,
-      ultimaInspecao: new Date(),
-      inspecoes: {
-        jan: 10,
-        fev: 0,
-        mar: 0,
-        abr: 0,
-        mai: 0,
-        jun: 0,
-        jul: 0,
-        ago: 0,
-        set: 0,
-        out: 0,
-        nov: 0,
-        dez: 0
+  public async list(): Promise<IInspection[]> {
+    return Promise.resolve([
+      {
+        created_at: new Date(),
+        description: 'teste',
+        edificio: 'teste',
+        images: ['teste'],
+        inspetor: 'teste',
+        status: EInspectionStatus.DONE,
+        updated_at: new Date()
       }
-    })
+    ])
   }
 
   public async post(payload: Partial<IInspection>): Promise<string> {
@@ -94,27 +86,27 @@ export class Services {
   }
 
   public async detectCrack(file: Express.Multer.File): Promise<string> {
-    const formData = new FormData();
+    const formData = new FormData()
 
-    const fileStream = file.buffer;
-    formData.append('file', fileStream, file.originalname);
+    const fileStream = file.buffer
+    formData.append('file', fileStream, file.originalname)
 
     try {
-      const url = process.env.URL_CRACK_DETECTION_API;
+      const url = process.env.URL_CRACK_DETECTION_API
       const response = await firstValueFrom(
         this.httpService.post(url as string, formData, {
           headers: {
-            ...formData.getHeaders(),
-          },
-        }),
-      );
-      console.log(response.data);
-      return JSON.stringify(response.data);
+            ...formData.getHeaders()
+          }
+        })
+      )
+      console.log(response.data)
+      return JSON.stringify(response.data)
     } catch (error) {
       throw new HttpException(
         'Erro ao acessar a API externa: ' + error.message,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+        HttpStatus.INTERNAL_SERVER_ERROR
+      )
     }
   }
 }

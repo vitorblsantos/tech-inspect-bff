@@ -21,8 +21,13 @@ export class Controllers {
     return await this.service.get()
   }
 
+  @Get('/inspecoes/list')
+  async list(): Promise<IInspection[]> {
+    return await this.service.list()
+  }
+
   @Get('/inspecoes/:id')
-  async list(): Promise<IInspection> {
+  async getInspection(): Promise<IInspection> {
     return await this.service.getInspection()
   }
 
@@ -36,7 +41,7 @@ export class Controllers {
   @Post('/detect')
   detectCrack(
     @UploadedFile()
-    file: any
+      file: any
   ): Promise<string> {
     return this.service.detectCrack(file)
   }

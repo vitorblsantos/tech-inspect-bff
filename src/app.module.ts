@@ -8,7 +8,6 @@ import store from 'cache-manager-redis-store'
 import { Controllers } from '@/app.controllers'
 import { Services } from '@/app.services'
 
-
 @Module({
   imports: [
     CacheModule.register<RedisClientOptions>({

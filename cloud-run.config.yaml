@@ -23,6 +23,9 @@ spec:
             - name: http1
               containerPort: 8080
           env:
+            - name: URL_CRACK_DETECTION_API
+              value: 'https://crack-detection.fly.dev/health/alive/detection/'
+
           resources:
             limits:
               cpu: "0.5"

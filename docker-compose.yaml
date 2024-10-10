@@ -5,17 +5,17 @@ networks:
     driver: bridge
 
 services:
-  demeter:
+  tech-inspect-bff:
     build:
       args:
         NODE_ENV: "production"
       context: .
-      dockerfile: ./apps/tech-inspect-bff/Dockerfile
+      dockerfile: Dockerfile
     container_name: tech-inspect-bff
     environment:
       NODE_ENV: "production"
       PORT: 8080
-    image: us-east1-docker.pkg.dev/vitorblsantos/tech-inspect-bff:latest
+    image: us.gcr.io/vitorblsantos/tech-inspect-bff:latest
     networks:
       - corp
     ports:

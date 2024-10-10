@@ -8,7 +8,7 @@ export enum EInspectionStatus {
 export interface IDashboard {
   total: number
   pendencias: number
-  ultimaInspecao: Date
+  ultimaInspecao: string
   inspecoes: {
     jan: number
     fev: number

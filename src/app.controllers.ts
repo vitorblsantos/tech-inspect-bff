@@ -4,6 +4,7 @@ import {
   Controller,
   Get,
   HttpCode,
+  Param,
   Post,
   UploadedFile,
   UseInterceptors
@@ -27,23 +28,23 @@ export class Controllers {
     return await this.service.list()
   }
 
-  @Get('/inspecoes/:id')
-  async getInspection(): Promise<IInspection> {
-    return await this.service.getInspection()
-  }
-
   @HttpCode(200)
   @UseInterceptors(CacheInterceptor)
   @Post('/inspecoes')
-  post(@Body() payload: IInspection): Promise<string> {
-    return this.service.post(payload)
+  post(@Body() body: { payload: IInspection }): Promise<string> {
+    return this.service.post(body.payload)
+  }
+
+  @Get('/inspecoes/:id')
+  async getInspection(@Param('id') id: string): Promise<IInspection> {
+    return await this.service.getInspection(id)
   }
 
   @Post('/detect')
   @UseInterceptors(FileInterceptor('file'))
   detectCrack(
     @UploadedFile()
-      file: any
+    file: any
   ): Promise<string> {
     return this.service.detectCrack(file)
   }

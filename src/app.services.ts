@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid'
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common'
 import Firebase from 'firebase-admin'
 
 import { EInspectionStatus, IDashboard, IInspection } from '@/app.interfaces'
@@ -13,9 +13,9 @@ export class Services {
 
   public get(): Promise<IDashboard> {
     return Promise.resolve({
-      total: 120,
+      total: 10,
       pendencias: 0,
-      ultimaInspecao: new Date(),
+      ultimaInspecao: new Date().toLocaleDateString(),
       inspecoes: {
         jan: 10,
         fev: 0,
@@ -33,8 +33,9 @@ export class Services {
     })
   }
 
-  public getInspection(): Promise<IInspection> {
+  public getInspection(id: string): Promise<IInspection> {
     return Promise.resolve({
+      id,
       created_at: new Date(),
       description: 'Lorem ipsum dolor sit amet',
       edificio: 'Kevin Mah Mahr',
@@ -61,30 +62,33 @@ export class Services {
   public async post(payload: Partial<IInspection>): Promise<string> {
     const id = uuidv4()
 
-    await Firebase.firestore()
-      .collection('inspecoes')
-      .doc(id)
-      .set(
-        {
-          id,
-          created_at: new Date(),
-          updated_at: new Date(),
-          status: EInspectionStatus.PENDING,
-          ...payload
-        },
-        {
-          merge: true
-        }
-      )
+    const data = {
+      id,
+      created_at: new Date(),
+      updated_at: new Date(),
+      status: EInspectionStatus.PENDING,
+      ...payload
+    }
+
+    if (payload && payload.images) {
+      for (let counter = 0; counter < payload.images?.length; counter++) {
+        payload.images[counter] = await this.detectCrack(
+          payload.images[counter]
+        )
+      }
+    }
+
+    await Firebase.firestore().collection('inspecoes').doc(id).set(data, {
+      merge: true
+    })
 
     return '@inspecoes/registro-salvo'
   }
 
-  public async detectCrack(file: Express.Multer.File): Promise<string> {
+  public async detectCrack(base64Image: string): Promise<string> {
     const formData = new FormData()
-
-    const fileStream = file.buffer
-    formData.append('file', fileStream, file.originalname)
+    const buffer = Buffer.from(base64Image.split(',')[1], 'base64')
+    formData.append('file', buffer, `${new Date().toISOString()}.jpg`)
 
     try {
       const url = process.env.URL_CRACK_DETECTION_API

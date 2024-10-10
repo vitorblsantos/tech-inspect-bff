@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import '../firebase.config'
+import './app.config'
 
 import { NestFactory } from '@nestjs/core'
 

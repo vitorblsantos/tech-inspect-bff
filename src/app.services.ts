@@ -1,11 +1,11 @@
 import { v4 as uuidv4 } from 'uuid'
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common'
-import Firebase from 'firebase-admin'
 
 import { EInspectionStatus, IDashboard, IInspection } from '@/app.interfaces'
 import { firstValueFrom } from 'rxjs'
 import { HttpService } from '@nestjs/axios'
 import * as FormData from 'form-data'
+import {Firebase} from './app.config'
 
 @Injectable()
 export class Services {
@@ -60,29 +60,34 @@ export class Services {
   }
 
   public async post(payload: Partial<IInspection>): Promise<string> {
-    const id = uuidv4()
+    try {
+      const id = uuidv4()
 
-    const data = {
-      id,
-      created_at: new Date(),
-      updated_at: new Date(),
-      status: EInspectionStatus.PENDING,
-      ...payload
-    }
-
-    if (payload && payload.images) {
-      for (let counter = 0; counter < payload.images?.length; counter++) {
-        payload.images[counter] = await this.detectCrack(
-          payload.images[counter]
-        )
+      const data = {
+        id,
+        created_at: new Date(),
+        updated_at: new Date(),
+        status: EInspectionStatus.PENDING,
+        ...payload
       }
+
+      if (payload && payload.images) {
+        for (let counter = 0; counter < payload.images?.length; counter++) {
+          payload.images[counter] = await this.detectCrack(
+            payload.images[counter]
+          )
+        }
+      }
+
+      await Firebase.firestore().collection('inspecoes').doc(id).set(data, {
+        merge: true
+      })
+
+      return '@inspecoes/registro-salvo'
+    } catch (err) {
+      console.error(err)
+      throw err
     }
-
-    await Firebase.firestore().collection('inspecoes').doc(id).set(data, {
-      merge: true
-    })
-
-    return '@inspecoes/registro-salvo'
   }
 
   public async detectCrack(base64Image: string): Promise<string> {

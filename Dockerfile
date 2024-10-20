@@ -1,11 +1,26 @@
-FROM node:20-slim AS builder
+### ETAPA 1 - BUILD
+FROM node:20-alpine AS builder
 
 WORKDIR /app
+COPY package.json package-lock.json ./
+
+RUN npm ci --only=production
+RUN npm cache clean --force
+
 COPY . .
 
-RUN yarn
-RUN yarn build
+RUN npm run build
 
-CMD ["node", "./dist/src/main.js"]
+### ETAPA 2 - START
+
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json .
+
+CMD ["node", "./dist/main.js"]
 
 EXPOSE 8080

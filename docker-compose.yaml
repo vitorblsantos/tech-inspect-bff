@@ -1,8 +1,8 @@
-version: "3.3"
-
 networks:
-  corp:
+  backend:
     driver: bridge
+    driver_opts:
+      com.docker.network.bridge.host_binding_ipv4: "127.0.0.1"
 
 services:
   tech-inspect-bff:
@@ -17,7 +17,7 @@ services:
       PORT: 8080
     image: us.gcr.io/vitorblsantos/tech-inspect-bff:latest
     networks:
-      - corp
+      - backend
     ports:
-      - 8080:8080
+      - "8080:8080"
     restart: on-failure

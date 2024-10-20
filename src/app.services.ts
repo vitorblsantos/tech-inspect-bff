@@ -1,11 +1,12 @@
+import { HttpService } from '@nestjs/axios'
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
+
+import { firstValueFrom } from 'rxjs'
 import { v4 as uuidv4 } from 'uuid'
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common'
+import * as FormData from 'form-data'
 
 import { EInspectionStatus, IDashboard, IInspection } from '@/app.interfaces'
-import { firstValueFrom } from 'rxjs'
-import { HttpService } from '@nestjs/axios'
-import * as FormData from 'form-data'
-import {Firebase} from './app.config'
+import { Firebase } from './app.config'
 
 @Injectable()
 export class Services {

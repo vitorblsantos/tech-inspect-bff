@@ -12,18 +12,20 @@ jobs:
     environment: production
 
     steps:
+      - name: Get deployment timestamp
+        run: echo "DEPLOY_TIME=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_ENV
+
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v1
-        with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-          service_account_key: echo "${{ secrets.SERVICE_ACCOUNT }}" | base64 --decode
-          export_default_credentials: true
-
-      - name: Get deployment timestamp
-        run: echo "DEPLOY_TIME=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_ENV
+      - name: Authenticate to Google Cloud
+        run: |
+          touch service-account-key.json
+          echo "${{ secrets.SERVICE_ACCOUNT }}" | base64 --decode > service-account-key.json
+          gcloud auth activate-service-account --key-file=service-account-key.json
+          gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://us.gcr.io
+        env:
+          SERVICE_ACCOUNT: ${{ secrets.SERVICE_ACCOUNT }}
 
       - name: Set Google Cloud Project
         run: gcloud config set project $PROJECT_ID

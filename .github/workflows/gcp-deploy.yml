@@ -11,9 +11,9 @@ jobs:
     environment: production
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-  authenticate_google_cloud:
+  auth:
     runs-on: ubuntu-latest
     needs: checkout
     environment: production
@@ -23,12 +23,13 @@ jobs:
           touch service-account-key.json
           echo "${{ secrets.SERVICE_ACCOUNT }}" | base64 --decode > service-account-key.json
           gcloud auth activate-service-account --key-file=service-account-key.json
+          gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://us.gcr.io
         env:
           SERVICE_ACCOUNT: ${{ secrets.SERVICE_ACCOUNT }}
 
-  set_google_cloud_project:
+  setup-project-id:
     runs-on: ubuntu-latest
-    needs: authenticate_google_cloud
+    needs: auth
     environment: production
     steps:
       - name: Set Google Cloud Project
@@ -36,34 +37,25 @@ jobs:
         env:
           PROJECT_ID: ${{ secrets.PROJECT_ID }}
 
-  authenticate_gcr:
+  build-docker-image:
     runs-on: ubuntu-latest
-    needs: set_google_cloud_project
-    environment: production
-    steps:
-      - name: Authenticate with GCR
-        run: |
-          gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://us.gcr.io
-
-  build_docker_images:
-    runs-on: ubuntu-latest
-    needs: authenticate_gcr
+    needs: setup-project-id
     environment: production
     steps:
       - name: Build Docker Images
         run: docker compose build
 
-  push_docker_images:
+  push-docker-image:
     runs-on: ubuntu-latest
-    needs: build_docker_images
+    needs: build-docker-image
     environment: production
     steps:
       - name: Push Docker Images
         run: docker compose push
 
-  replace_cloud_run_service:
+  replace-service:
     runs-on: ubuntu-latest
-    needs: push_docker_images
+    needs: push-docker-image
     environment: production
     steps:
       - name: Replace Cloud Run Service
@@ -71,9 +63,9 @@ jobs:
         env:
           PROJECT_ID: ${{ secrets.PROJECT_ID }}
 
-  update_cloud_run_service:
+  update-service:
     runs-on: ubuntu-latest
-    needs: replace_cloud_run_service
+    needs: replace-service
     environment: production
     steps:
       - name: Update Cloud Run Service
@@ -82,13 +74,13 @@ jobs:
           PROJECT_ID: ${{ secrets.PROJECT_ID }}
           SERVICE_NAME: ${{ secrets.SERVICE_NAME }}
 
-  add_iam_policy_binding:
+  update-iam-policy:
     runs-on: ubuntu-latest
-    needs: update_cloud_run_service
+    needs: update-service
     environment: production
     steps:
       - name: Add IAM Policy Binding for Cloud Run
         run: gcloud run services add-iam-policy-binding $SERVICE_NAME --region=us-central1 --project $PROJECT_ID --member=allUsers --role=roles/run.invoker --platform=managed
         env:
           PROJECT_ID: ${{ secrets.PROJECT_ID }}
-          SERVICE_NAME: ${
+          SERVICE_NAME: ${{ secrets.SERVICE_NAME }}

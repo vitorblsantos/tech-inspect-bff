@@ -7,7 +7,7 @@ on:
   workflow_dispatch:  # Permite rodar o workflow manualmente
 
 jobs:
-  deploy:
+  deploy-cloud-run:
     runs-on: ubuntu-latest
     environment: production
 
@@ -18,7 +18,7 @@ jobs:
       - name: Authenticate to Google Cloud
         run: |
           touch service-account-key.json
-          echo "${{ secrets.SERVICE_ACCOUNT }}" | base64 --decode > service-account-key.json
+          echo $SERVICE_ACCOUNT | base64 --decode > service-account-key.json
           gcloud auth activate-service-account --key-file=service-account-key.json
           gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://us.gcr.io
         env:
@@ -39,9 +39,11 @@ jobs:
         run: gcloud run services replace ./app.yaml --project $PROJECT_ID
         env:
           PROJECT_ID: ${{ secrets.PROJECT_ID }}
-          SERVICE_NAME: ${{ secrets.SERVICE_NAME }}
 
       - name: Update Cloud Run Service
         run: |
-          echo "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_ENV
-          gcloud run services update ${{ secrets.SERVICE_NAME }} --project ${{ secrets.PROJECT_ID }} --region us-central1 --update-env-vars DEPLOY_VERSION_UTC="${{ env.GITHUB_ENV }}"
+          DEPLOY_VERSION_UTC=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+          gcloud run services update $SERVICE_NAME --project $PROJECT_ID --region us-central1 --update-env-vars DEPLOY_VERSION_UTC=$DEPLOY_VERSION_UTC
+        env:
+          PROJECT_ID: ${{ secrets.PROJECT_ID }}
+          SERVICE_NAME: ${{ secrets.SERVICE_NAME }}

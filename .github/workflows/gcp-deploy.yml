@@ -12,9 +12,6 @@ jobs:
     environment: production
 
     steps:
-      - name: Get deployment timestamp
-        run: echo "DEPLOY_TIME=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_ENV
-
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -45,4 +42,4 @@ jobs:
           SERVICE_NAME: ${{ secrets.SERVICE_NAME }}
 
       - name: Update Cloud Run Service
-        run: gcloud run services update $SERVICE_NAME --project $PROJECT_ID --region us-central1 --update-env-vars DEPLOY_TIME=${{ env.DEPLOY_TIME }}
+        run: gcloud run services update $SERVICE_NAME --project $PROJECT_ID --region us-central1 --update-env-vars DEPLOY_VERSION_UTC=echo "$(date -u +'%Y-%m-%dT%H:%M:%SZ')"

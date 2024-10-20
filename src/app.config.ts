@@ -1,13 +1,9 @@
 import admin from 'firebase-admin'
 
-admin.initializeApp({
-  projectId: 'vitorblsantos'
-})
+admin.initializeApp()
 
 admin.firestore().settings({
-  databaseId: 'vitorblsantos',
-  timestampsInSnapshots: true
+  databaseId: 'tech-inspect'
 })
 
 export const Firebase = admin
-export const Firestore = admin.firestore()

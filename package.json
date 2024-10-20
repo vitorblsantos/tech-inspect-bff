@@ -1,12 +1,12 @@
 {
   "name": "tech-inspect-bff",
-  "version": "1.0.4",
+  "version": "2.0.0",
   "description": "Servico utilizado pelo tech-inspect-dash",
   "author": "Vitor Barbosa de Lima Santos",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "nest build",
+    "build": "nest build && npm run sentry:sourcemaps",
     "dev": "nodemon",
     "prestart:prod": "rm -rf dist && tsc",
     "start": "ts-node -r tsconfig-paths/register src/main.ts",
@@ -16,7 +16,8 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org vitorblsantos --project tech-inspect ./dist && sentry-cli sourcemaps upload --org vitorblsantos --project tech-inspect ./dist"
   },
   "dependencies": {
     "@google-cloud/storage": "^7.13.0",
@@ -28,6 +29,9 @@
     "@nestjs/microservices": "^10.2.8",
     "@nestjs/platform-express": "^10.4.4",
     "@nestjs/typeorm": "^10.0.0",
+    "@sentry/cli": "^2.37.0",
+    "@sentry/nestjs": "^8.34.0",
+    "@sentry/profiling-node": "^8.34.0",
     "@types/multer": "^1.4.12",
     "axios": "^1.7.7",
     "cache-manager": "^5.7.6",

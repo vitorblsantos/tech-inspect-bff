@@ -1,8 +1,10 @@
-import { CacheModule } from '@nestjs/cache-manager'
 import { HttpModule } from '@nestjs/axios'
+import { CacheModule } from '@nestjs/cache-manager'
 import { Module } from '@nestjs/common'
-
+import { APP_FILTER } from '@nestjs/core'
+import { SentryGlobalFilter } from '@sentry/nestjs/setup'
 import { RedisClientOptions } from 'redis'
+
 import store from 'cache-manager-redis-store'
 
 import { Controllers } from '@/app.controllers'
@@ -21,6 +23,12 @@ import { Services } from '@/app.services'
   ],
   controllers: [Controllers],
   exports: [Services],
-  providers: [Services]
+  providers: [
+    {
+      provide: APP_FILTER,
+      useClass: SentryGlobalFilter
+    },
+    Services
+  ]
 })
 export class AppModule {}

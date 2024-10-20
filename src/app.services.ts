@@ -1,10 +1,10 @@
 import { HttpService } from '@nestjs/axios'
-import { Injectable, Logger } from '@nestjs/common'
+import { Injectable, Logger, NotFoundException } from '@nestjs/common'
 
 import { v7 as uuidv7 } from 'uuid'
 
 import { EInspectionStatus, IDashboard, IInspection } from '@/app.interfaces'
-import { Firebase, Firestore } from './app.config'
+import { Firebase } from './app.config'
 
 @Injectable()
 export class Services {
@@ -55,10 +55,16 @@ export class Services {
 
   public async list(): Promise<IInspection[]> {
     try {
-      const { docs, size } = await Firestore.collection('inspecoes')
+      const { docs, empty } = await Firebase.firestore()
+        .collection('inspecoes')
         .limit(999)
         .get()
-      Logger.log(size)
+
+      if (empty) {
+        Logger.warn('Query de inspecoes retornou vazia')
+        throw new NotFoundException('Query de inspecoes retornou vazia')
+      }
+
       return docs.map((el) => el.data()) as IInspection[]
     } catch (err) {
       Logger.error(err)

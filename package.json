@@ -1,6 +1,6 @@
 {
   "name": "tech-inspect-bff",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "Servico utilizado pelo tech-inspect-dash",
   "author": "Vitor Barbosa de Lima Santos",
   "private": true,

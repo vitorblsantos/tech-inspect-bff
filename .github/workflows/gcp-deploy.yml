@@ -42,4 +42,6 @@ jobs:
           SERVICE_NAME: ${{ secrets.SERVICE_NAME }}
 
       - name: Update Cloud Run Service
-        run: gcloud run services update $SERVICE_NAME --project $PROJECT_ID --region us-central1 --update-env-vars DEPLOY_VERSION_UTC=echo "$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+        run: |
+          echo "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_ENV
+          gcloud run services update $SERVICE_NAME --project $PROJECT_ID --region us-central1 --update-env-vars DEPLOY_VERSION_UTC=${{env.GITHUB_ENV}}

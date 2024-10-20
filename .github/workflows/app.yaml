@@ -1,0 +1,37 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: tech-inspect-bff
+  labels:
+    cloud.googleapis.com/location: us-central1
+  annotations:
+    run.googleapis.com/ingress: internal-and-cloud-load-balancing
+    run.googleapis.com/ingress-status: all
+spec:
+  template:
+    metadata:
+      labels:
+        run.googleapis.com/startupProbeType: Custom
+      annotations:
+        autoscaling.knative.dev/maxScale: "1"
+    spec:
+      containerConcurrency: 1
+      timeoutSeconds: 300
+      serviceAccountName: tech-inspect@vitorblsantos.iam.gserviceaccount.com
+      containers:
+        - image: us.gcr.io/vitorblsantos/tech-inspect-bff:latest
+          ports:
+            - name: http1
+              containerPort: 8080
+          env:
+            - name: API_PORT
+              value: '8080'
+            - name: NODE_ENV
+              value: 'PRODUCTION'
+          resources:
+            limits:
+              cpu: "2"
+              memory: 256Mi
+  traffic:
+    - percent: 100
+      latestRevision: true

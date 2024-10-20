@@ -16,8 +16,7 @@ jobs:
 
       - name: Authenticate to Google Cloud
         run: |
-          touch service-account-key.json
-          echo "${{ secrets.SERVICE_ACCOUNT }}" | base64 --decode > service-account-key.json
+          echo "${{ secrets.SERVICE_ACCOUNT }}" > service-account-key.json
           gcloud auth activate-service-account --key-file=service-account-key.json
         env:
           SERVICE_ACCOUNT: ${{ secrets.SERVICE_ACCOUNT }}

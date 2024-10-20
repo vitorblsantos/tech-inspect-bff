@@ -1,12 +1,10 @@
 import { HttpService } from '@nestjs/axios'
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 
-import { firstValueFrom } from 'rxjs'
-import { v4 as uuidv4 } from 'uuid'
-import * as FormData from 'form-data'
+import { v7 as uuidv7 } from 'uuid'
 
 import { EInspectionStatus, IDashboard, IInspection } from '@/app.interfaces'
-import { Firebase } from './app.config'
+import { Firebase, Firestore } from './app.config'
 
 @Injectable()
 export class Services {
@@ -41,28 +39,36 @@ export class Services {
       description: 'Lorem ipsum dolor sit amet',
       edificio: 'Kevin Mah Mahr',
       inspetor: 'Alceu Valença',
-      images: [
-        'https://s2-casaejardim.glbimg.com/nHlVi8l9Hvjpydwfm2vSykkiVU4=/0x0:1400x933/924x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_a0b7e59562ef42049f4e191fe476fe7d/internal_photos/bs/2023/p/n/a6KJuERmmFBzM2ibHhhw/platina-220-qual-e-o-predio-mais-alto-de-sao-paulo-casa-e-jardim4.jpg',
-        'https://s2-casaejardim.glbimg.com/nHlVi8l9Hvjpydwfm2vSykkiVU4=/0x0:1400x933/924x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_a0b7e59562ef42049f4e191fe476fe7d/internal_photos/bs/2023/p/n/a6KJuERmmFBzM2ibHhhw/platina-220-qual-e-o-predio-mais-alto-de-sao-paulo-casa-e-jardim4.jpg',
-        'https://s2-casaejardim.glbimg.com/nHlVi8l9Hvjpydwfm2vSykkiVU4=/0x0:1400x933/924x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_a0b7e59562ef42049f4e191fe476fe7d/internal_photos/bs/2023/p/n/a6KJuERmmFBzM2ibHhhw/platina-220-qual-e-o-predio-mais-alto-de-sao-paulo-casa-e-jardim4.jpg'
-      ],
+      images: {
+        original:
+          'https://s2-casaejardim.glbimg.com/nHlVi8l9Hvjpydwfm2vSykkiVU4=/0x0:1400x933/924x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_a0b7e59562ef42049f4e191fe476fe7d/internal_photos/bs/2023/p/n/a6KJuERmmFBzM2ibHhhw/platina-220-qual-e-o-predio-mais-alto-de-sao-paulo-casa-e-jardim4.jpg',
+        manipulated: [
+          'https://s2-casaejardim.glbimg.com/nHlVi8l9Hvjpydwfm2vSykkiVU4=/0x0:1400x933/924x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_a0b7e59562ef42049f4e191fe476fe7d/internal_photos/bs/2023/p/n/a6KJuERmmFBzM2ibHhhw/platina-220-qual-e-o-predio-mais-alto-de-sao-paulo-casa-e-jardim4.jpg',
+          'https://s2-casaejardim.glbimg.com/nHlVi8l9Hvjpydwfm2vSykkiVU4=/0x0:1400x933/924x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_a0b7e59562ef42049f4e191fe476fe7d/internal_photos/bs/2023/p/n/a6KJuERmmFBzM2ibHhhw/platina-220-qual-e-o-predio-mais-alto-de-sao-paulo-casa-e-jardim4.jpg',
+          'https://s2-casaejardim.glbimg.com/nHlVi8l9Hvjpydwfm2vSykkiVU4=/0x0:1400x933/924x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_a0b7e59562ef42049f4e191fe476fe7d/internal_photos/bs/2023/p/n/a6KJuERmmFBzM2ibHhhw/platina-220-qual-e-o-predio-mais-alto-de-sao-paulo-casa-e-jardim4.jpg'
+        ]
+      },
       status: EInspectionStatus.DONE,
       updated_at: new Date()
     })
   }
 
   public async list(): Promise<IInspection[]> {
-    const { docs } = await Firebase.firestore()
-      .collection('inspecoes')
-      .limit(999)
-      .get()
-
-    return docs.map((el) => el.data()) as IInspection[]
+    try {
+      const { docs, size } = await Firestore.collection('inspecoes')
+        .limit(999)
+        .get()
+      Logger.log(size)
+      return docs.map((el) => el.data()) as IInspection[]
+    } catch (err) {
+      Logger.error(err)
+      throw err
+    }
   }
 
   public async post(payload: Partial<IInspection>): Promise<string> {
     try {
-      const id = uuidv4()
+      const id = uuidv7()
 
       const data = {
         id,
@@ -70,14 +76,6 @@ export class Services {
         updated_at: new Date(),
         status: EInspectionStatus.PENDING,
         ...payload
-      }
-
-      if (payload && payload.images) {
-        for (let counter = 0; counter < payload.images?.length; counter++) {
-          payload.images[counter] = await this.detectCrack(
-            payload.images[counter]
-          )
-        }
       }
 
       await Firebase.firestore().collection('inspecoes').doc(id).set(data, {
@@ -88,30 +86,6 @@ export class Services {
     } catch (err) {
       console.error(err)
       throw err
-    }
-  }
-
-  public async detectCrack(base64Image: string): Promise<string> {
-    const formData = new FormData()
-    const buffer = Buffer.from(base64Image.split(',')[1], 'base64')
-    formData.append('file', buffer, `${new Date().toISOString()}.jpg`)
-
-    try {
-      const url = process.env.URL_CRACK_DETECTION_API
-      const response = await firstValueFrom(
-        this.httpService.post(url as string, formData, {
-          headers: {
-            ...formData.getHeaders()
-          }
-        })
-      )
-      console.log(response.data)
-      return JSON.stringify(response.data)
-    } catch (error) {
-      throw new HttpException(
-        'Erro ao acessar a API externa: ' + error.message,
-        HttpStatus.INTERNAL_SERVER_ERROR
-      )
     }
   }
 }

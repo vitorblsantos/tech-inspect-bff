@@ -29,7 +29,10 @@ export interface IInspection {
   created_at: Date
   description: string
   edificio: string
-  images: string[]
+  images: {
+    original: string
+    manipulated: string[]
+  }
   inspetor: string
   status: EInspectionStatus
   updated_at: Date

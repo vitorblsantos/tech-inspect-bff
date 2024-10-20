@@ -5,7 +5,9 @@ admin.initializeApp({
 })
 
 admin.firestore().settings({
-  databaseId: 'vitorblsantos'
+  databaseId: 'vitorblsantos',
+  timestampsInSnapshots: true
 })
 
 export const Firebase = admin
+export const Firestore = admin.firestore()

@@ -13,11 +13,16 @@ services:
       dockerfile: Dockerfile
     container_name: tech-inspect-bff
     environment:
+      API_PORT: 8080
       NODE_ENV: "production"
-      PORT: 8080
     image: us.gcr.io/vitorblsantos/tech-inspect-bff:latest
     networks:
       - backend
     ports:
       - "8080:8080"
     restart: on-failure
+
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"

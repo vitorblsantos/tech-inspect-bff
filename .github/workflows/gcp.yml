@@ -1,0 +1,53 @@
+name: Deploy to Google Cloud Run
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Authenticate to Google Cloud
+        run: |
+          echo ${{ secrets.SERVICE_ACCOUNT }} > service-account-key.json
+          gcloud auth activate-service-account --key-file=service-account-key.json
+        env:
+          SERVICE_ACCOUNT: ${{ secrets.SERVICE_ACCOUNT }}
+
+      - name: Set Google Cloud Project
+        run: gcloud config set project $PROJECT_ID
+        env:
+          PROJECT_ID: ${{ secrets.PROJECT_ID }}
+
+      - name: Authenticate with GCR
+        run: |
+          gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://us.gcr.io
+
+      - name: Build Docker Images
+        run: docker compose build
+
+      - name: Push Docker Images
+        run: docker compose push
+
+      - name: Replace Cloud Run Service
+        run: gcloud run services replace ./app.yaml --project $PROJECT_ID
+        env:
+          PROJECT_ID: ${{ secrets.PROJECT_ID }}
+
+      - name: Update Cloud Run Service
+        run: gcloud run services update $SERVICE_NAME --project $PROJECT_ID --region us-central1
+        env:
+          PROJECT_ID: ${{ secrets.PROJECT_ID }}
+          SERVICE_NAME: ${{ secrets.SERVICE_NAME }}
+
+      - name: Add IAM Policy Binding for Cloud Run
+        run: gcloud run services add-iam-policy-binding $SERVICE_NAME --region=us-central1 --project $PROJECT_ID --member=allUsers --role=roles/run.invoker --platform=managed
+        env:
+          PROJECT_ID: ${{ secrets.PROJECT_ID }}
+          SERVICE_NAME: ${{ secrets.SERVICE_NAME }}

@@ -1,6 +1,6 @@
 {
   "name": "tech-inspect-bff",
-  "version": "2.1.1",
+  "version": "3.0.0",
   "description": "Servico utilizado pelo tech-inspect-dash",
   "author": "Vitor Barbosa de Lima Santos",
   "private": true,
@@ -36,8 +36,9 @@
     "axios": "^1.7.7",
     "cache-manager": "^5.7.6",
     "cache-manager-redis-store": "^2.0.0",
+    "crypto": "^1.0.1",
     "date-fns": "^3.6.0",
-    "date-fns-tz": "^3.1.3",
+    "date-fns-tz": "^3.2.0",
     "dotenv": "^16.3.1",
     "firebase": "^10.14.0",
     "firebase-admin": "^12.6.0",

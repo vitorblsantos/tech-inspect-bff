@@ -10,6 +10,7 @@ import store from 'cache-manager-redis-store'
 import { Controllers } from '@/app.controllers'
 import { Services } from '@/app.services'
 
+const { REDIS_URL } = process.env
 @Module({
   imports: [
     CacheModule.register<RedisClientOptions>({
@@ -17,7 +18,7 @@ import { Services } from '@/app.services'
       isGlobal: true,
       name: 'tech-inspect-bff',
       ttl: 60, // segundos
-      url: 'redis://127.0.0.1:6379'
+      url: REDIS_URL
     }),
     HttpModule
   ],

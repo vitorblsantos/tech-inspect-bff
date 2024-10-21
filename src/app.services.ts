@@ -13,7 +13,6 @@ import { createHash } from 'crypto'
 
 import { EInspectionStatus, IDashboard, IInspection } from '@/app.interfaces'
 import { Firebase } from '@/app.config'
-import { formatDayMonthYear } from './app.utils'
 
 @Injectable()
 export class Services {

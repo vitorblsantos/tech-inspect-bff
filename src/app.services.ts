@@ -43,10 +43,14 @@ export class Services {
         dez: 0
       }
 
-      docs.forEach((el) => {
+      let lastDocument
+
+      docs.forEach((el, key) => {
         const document = el.data()
 
-        const month = new Date(document.created_at).getMonth()
+        if (key === 0) lastDocument = document
+
+        const month = new Date(document.created_at._seconds * 1000).getMonth()
 
         if (month === 1) return inspecoes.fev++
         if (month === 2) return inspecoes.mar++
@@ -66,7 +70,9 @@ export class Services {
         inspecoes,
         pendencias: 0,
         total: size,
-        ultimaInspecao: formatDayMonthYear(docs[size - 1].data().created_at)
+        ultimaInspecao: new Date(
+          lastDocument.created_at._seconds * 1000
+        ).toLocaleDateString()
       }
     } catch (err) {
       Logger.error(err)

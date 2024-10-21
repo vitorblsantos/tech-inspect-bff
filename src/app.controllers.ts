@@ -25,7 +25,9 @@ export class Controllers {
   }
 
   @Post('/inspecoes')
-  post(@Body() body: { payload: IInspection }): Promise<string> {
+  post(
+    @Body() body: { payload: IInspection & { images: string[] } }
+  ): Promise<string> {
     return this.service.post(body.payload)
   }
 

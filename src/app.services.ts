@@ -173,7 +173,7 @@ export class Services {
         images: imageUrls, // Use o resultado da manipulação da imagem
         created_at: new Date(),
         updated_at: new Date(),
-        status: EInspectionStatus.PENDING
+        status: EInspectionStatus.DONE
       }
 
       await this.repository.doc(id).set(data, {

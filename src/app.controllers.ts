@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Post,
+  UploadedFile,
   UseInterceptors
 } from '@nestjs/common'
 
@@ -35,5 +36,10 @@ export class Controllers {
   @Get('/inspecoes/:id')
   async getInspection(@Param('id') id: string): Promise<IInspection> {
     return await this.service.getInspection(id)
+  }
+
+  @Post('/detect')
+  detectCrack(@UploadedFile() file: Express.Multer.File): Promise<string> {
+    return this.service.detectCrack(file)
   }
 }

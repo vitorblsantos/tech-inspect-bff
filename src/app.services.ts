@@ -1,6 +1,11 @@
+import { Readable } from 'stream'
+import * as FormData from 'form-data'
 import { Storage } from '@google-cloud/storage'
 
 import {
+  HttpException,
+  HttpStatus,
+  Inject,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -13,10 +18,12 @@ import { createHash } from 'crypto'
 
 import { EInspectionStatus, IDashboard, IInspection } from '@/app.interfaces'
 import { Firebase } from '@/app.config'
+import { firstValueFrom } from 'rxjs'
+import { HttpService } from '@nestjs/axios'
 
 @Injectable()
 export class Services {
-  constructor() {}
+  constructor(@Inject(HttpService) private readonly httpService: HttpService) {}
   private readonly repository = Firebase.firestore().collection('inspecoes')
   private readonly storage = new Storage()
   private readonly bucket = this.storage.bucket('tech-inspect')
@@ -121,7 +128,9 @@ export class Services {
     try {
       const id = uuidv7()
 
-      const handleImages = async (image: string): Promise<string> => {
+      const handleImages = async (
+        image: string
+      ): Promise<{ original: string; manipulated: string | null }> => {
         const base64Data = image.split(',')[1]
         const buffer = Buffer.from(base64Data, 'base64')
         const blobName = `${createHash('sha256').update(buffer).digest('hex')}.jpg`
@@ -131,11 +140,24 @@ export class Services {
           resumable: false
         })
 
-        return new Promise((resolve, reject) => {
+        // eslint-disable-next-line no-async-promise-executor
+        return new Promise(async (resolve, reject) => {
           stream.on('error', (err) => reject(err))
-          stream.on('finish', () => {
-            const publicUrl = `https://storage.googleapis.com/${this.bucket.name}/${blobName}`
-            resolve(publicUrl)
+          stream.on('finish', async () => {
+            const publicUrl = `https://storage.googleapis.com/tech-inspect/${blobName}`
+            const readableStream = new Readable()
+            readableStream.push(buffer)
+            readableStream.push(null)
+            const form = new FormData()
+
+            form.append('file', readableStream, {
+              filename: blobName,
+              contentType: 'image/jpeg'
+            })
+
+            const manipulated = await this.detectCrack(form)
+
+            resolve({ original: publicUrl, manipulated })
           })
           stream.end(buffer)
         })
@@ -148,10 +170,7 @@ export class Services {
       const data = {
         ...payload,
         id,
-        images: imageUrls.map((el) => ({
-          original: el,
-          manipulated: null
-        })),
+        images: imageUrls, // Use o resultado da manipulação da imagem
         created_at: new Date(),
         updated_at: new Date(),
         status: EInspectionStatus.PENDING
@@ -165,6 +184,26 @@ export class Services {
     } catch (err) {
       Logger.error(err)
       throw new InternalServerErrorException('Erro ao salvar a inspeção', err)
+    }
+  }
+
+  public async detectCrack(formData: FormData): Promise<string> {
+    try {
+      const url = process.env.URL_CRACK_DETECTION_API
+      const response = await firstValueFrom(
+        this.httpService.post(url as string, formData, {
+          headers: {
+            ...formData.getHeaders()
+          }
+        })
+      )
+
+      return response.data.images
+    } catch (error) {
+      throw new HttpException(
+        'Erro ao acessar a API externa: ' + error.message,
+        HttpStatus.INTERNAL_SERVER_ERROR
+      )
     }
   }
 }

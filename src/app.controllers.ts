@@ -8,6 +8,7 @@ import {
   UploadedFile,
   UseInterceptors
 } from '@nestjs/common'
+import FormData from 'form-data'
 
 import { IDashboard, IInspection } from '@/app.interfaces'
 import { Services } from '@/app.services'
@@ -39,7 +40,7 @@ export class Controllers {
   }
 
   @Post('/detect')
-  detectCrack(@UploadedFile() file: Express.Multer.File): Promise<string> {
+  detectCrack(@UploadedFile() file: FormData): Promise<string> {
     return this.service.detectCrack(file)
   }
 }
